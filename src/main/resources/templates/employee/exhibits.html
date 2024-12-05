@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Экспонаты</title>
+    <link rel="icon" th:href="@{/img/favicon.ico}" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+        }
+        .container {
+            padding: 2rem;
+            background-color: #fff; /* White container background */
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Subtle shadow */
+        }
+        .table-responsive {
+            overflow-x: auto; /* Enable horizontal scrolling for small screens */
+        }
+
+    </style>
+</head>
+<body>
+<div class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" th:href="@{/employee/exhibits}">Экспонаты</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/employee/exhibitions}">Выставки</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/employee/employees}">Сотрудники</a>
+                        </li>
+                    </ul>
+                    <div class="navbar-text">
+                        <span sec:authorize="isAuthenticated()" th:text="${#authentication.principal?.lastName} + ' ' + ${#authentication.principal?.firstName?.charAt(0)} + '. ' + ${#authentication.principal?.middleName?.charAt(0)} + '.'"></span>
+                        <form th:action="@{/logout}" method="post">
+                            <button class="btn btn-outline-danger ms-2" type="submit">
+                                <i class="bi bi-box-arrow-right"></i> Выйти
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow-1 py-5">
+        <div class="container">
+            <h1>Экспонаты</h1>
+
+            <form th:action="@{/employee/exhibits}" th:object="${exhibit}" method="post">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Название:</label>
+                    <input type="text" id="name" name="name" class="form-control" th:field="*{name}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="productionDate" class="form-label">Дата производства:</label>
+                    <input type="date" id="productionDate" name="productionDate" class="form-control" th:field="*{productionDate}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="manufacturer" class="form-label">Производитель:</label>
+                    <input type="text" id="manufacturer" name="manufacturer" class="form-control" th:field="*{manufacturer}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="deviceType" class="form-label">Тип устройства:</label>
+                    <input type="text" id="deviceType" name="deviceType" class="form-control" th:field="*{deviceType}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="condition" class="form-label">Состояние:</label>
+                    <input type="text" id="condition" name="condition" class="form-control" th:field="*{condition}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="history" class="form-label">История:</label>
+                    <textarea id="history" name="history" class="form-control" rows="5" th:field="*{history}" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="technicalSpecs" class="form-label">Технические Характеристики:</label>
+                    <textarea id="technicalSpecs" name="technicalSpecs" class="form-control" rows="5" th:field="*{technicalSpecs}" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="museumEntryDate" class="form-label">Дата поступления в музей:</label>
+                    <input type="date" id="museumEntryDate" name="museumEntryDate" class="form-control" th:field="*{museumEntryDate}" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Добавить</button>
+            </form>
+
+            <h2 class="mt-5">Список экспонатов</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Дата производства</th>
+                        <th>Производитель</th>
+                        <th>Тип устройства</th>
+                        <th>Состояние</th>
+                        <th>Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="exhibit : ${exhibits}">
+                        <td th:text="${exhibit.name}"></td>
+                        <td th:text="${#temporals.format(exhibit.productionDate, 'yyyy-MM-dd')}"></td>
+                        <td th:text="${exhibit.manufacturer}"></td>
+                        <td th:text="${exhibit.deviceType}"></td>
+                        <td th:text="${exhibit.condition}"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"  th:data-id="${exhibit.exhibitId}" th:data-name="${exhibit.name}"
+                                    th:data-production-date="${#temporals.format(exhibit.productionDate, 'yyyy-MM-dd')}" th:data-manufacturer="${exhibit.manufacturer}" th:data-device-type="${exhibit.deviceType}" th:data-condition="${exhibit.condition}"
+                                    th:data-history="${exhibit.history}" th:data-technical-specs="${exhibit.technicalSpecs}" th:data-museum-entry-date="${#temporals.format(exhibit.museumEntryDate, 'yyyy-MM-dd')}"> Редактировать
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal"
+                                    th:data-id="${exhibit.exhibitId}" th:data-name="${exhibit.name}">
+                                Удалить
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+
+
+    <footer>
+        <div class="text-center mt-5">
+            <p>© 2024 Мой Сайт. Все права защищены.</p>
+        </div>
+    </footer>
+</div>
+
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Редактирование экспоната</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/employee/exhibits/update}" method="post" id="editExhibitForm">
+                    <input type="hidden" id="exhibitId" name="exhibitId">
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Название:</label>
+                        <input type="text" id="editName" name="name" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editProductionDate" class="form-label">Дата производства:</label>
+                        <input type="date" id="editProductionDate" name="productionDate" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editManufacturer" class="form-label">Производитель:</label>
+                        <input type="text" id="editManufacturer" name="manufacturer" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDeviceType" class="form-label">Тип устройства:</label>
+                        <input type="text" id="editDeviceType" name="deviceType" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCondition" class="form-label">Состояние:</label>
+                        <input type="text" id="editCondition" name="condition" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editHistory" class="form-label">История:</label>
+                        <textarea id="editHistory" name="history" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTechnicalSpecs" class="form-label">Технические характеристики:</label>
+                        <textarea id="editTechnicalSpecs" name="technicalSpecs" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editMuseumEntryDate" class="form-label">Дата поступления в музей:</label>
+                        <input type="date" id="editMuseumEntryDate" name="museumEntryDate" class="form-control" required>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" form="editExhibitForm" class="btn btn-primary">Сохранить изменения</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить экспонат "<span id="deleteItem-name"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form id="deleteForm" method="post">  <!-- Form for delete -->
+                    <input type="hidden" id="deleteItemId" name="id">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+
+<script>
+    const editModal = document.getElementById('editModal');
+    editModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id');
+        const name = button.getAttribute('data-name');
+        const productionDate = button.getAttribute('data-production-date');
+        const manufacturer = button.getAttribute('data-manufacturer');
+        const deviceType = button.getAttribute('data-device-type');
+        const condition = button.getAttribute('data-condition');
+        const history = button.getAttribute('data-history');
+        const technicalSpecs = button.getAttribute('data-technical-specs');
+        const museumEntryDate = button.getAttribute('data-museum-entry-date');
+        // ...get other attributes
+
+        const modalBodyInputId = editModal.querySelector('#exhibitId');
+        const modalBodyInputName = editModal.querySelector('#editName');
+        const modalBodyInputProductionDate = editModal.querySelector('#editProductionDate');
+        const modalBodyInputManufacturer = editModal.querySelector('#editManufacturer');
+        const modalBodyInputDeviceType = editModal.querySelector('#editDeviceType');
+        const modalBodyInputCondition = editModal.querySelector('#editCondition');
+        const modalBodyInputHistory = editModal.querySelector('#editHistory');
+        const modalBodyInputTechnicalSpecs = editModal.querySelector('#editTechnicalSpecs');
+        const modalBodyInputMuseumEntryDate = editModal.querySelector('#editMuseumEntryDate');
+        // ...get other input elements from the modal body
+
+
+        modalBodyInputId.value = id;
+        modalBodyInputName.value = name;
+        modalBodyInputProductionDate.value = productionDate;
+        modalBodyInputManufacturer.value = manufacturer;
+        modalBodyInputDeviceType.value = deviceType;
+        modalBodyInputCondition.value = condition;
+        modalBodyInputHistory.value = history;
+        modalBodyInputProductionDate.value = productionDate; // Теперь productionDate в нужном формате
+        modalBodyInputTechnicalSpecs.value = technicalSpecs;
+        modalBodyInputMuseumEntryDate.value = museumEntryDate; // Теперь museumEntryDate в нужном формате
+
+        // ...set values to other inputs
+
+    });
+    const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+    deleteConfirmModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id');
+        const name = button.getAttribute('data-name');
+
+        const modalBodyItemName = deleteConfirmModal.querySelector('#deleteItem-name');
+        modalBodyItemName.textContent = name;  // Display the item name
+
+        const deleteForm = deleteConfirmModal.querySelector('#deleteForm');
+        const deleteItemIdInput = deleteConfirmModal.querySelector('#deleteItemId');
+        deleteItemIdInput.value = id;
+
+        deleteForm.action = `/employee/exhibits/delete/${id}`; // Set correct delete URL
+    });
+
+</script>
+<script>
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+</script>
+
+</body>
+</html>
