@@ -2,12 +2,22 @@ package ru.feryafox.ctm.controllers.employee;
 
 
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import ru.feryafox.ctm.dto.exhibit.ExhibitDto;
+import ru.feryafox.ctm.dto.exhibit.ExhibitIdsDto;
 import ru.feryafox.ctm.dto.exhibition.CreateExhibitionDto;
 import ru.feryafox.ctm.dto.exhibition.UpdateExhibitionDto;
+import ru.feryafox.ctm.projections.ExhibitParticipationProjection;
 import ru.feryafox.ctm.services.employee.ExhibitionService;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/employee/exhibitions")
@@ -41,5 +51,33 @@ public class ExhibitionController {
     public String updateExhibition(@Valid @ModelAttribute UpdateExhibitionDto dto, Model model) {
         exhibitionService.updateExhibition(dto);
         return "redirect:/employee/exhibitions";
+    }
+
+    @GetMapping("/{id}/exhibits")
+    @ResponseBody
+    public Map<String, List<ExhibitDto>> exhibits(@PathVariable long id) {
+        List<ExhibitParticipationProjection> projections = exhibitionService.getExhibitParticipation(id);
+
+        List<ExhibitDto> availableExhibits = projections.stream()
+                .filter(p -> !p.getIsParticipating())
+                .map(p -> new ExhibitDto(p.getExhibitId(), p.getExhibitName()))
+                .toList();
+
+        List<ExhibitDto> selectedExhibits = projections.stream()
+                .filter(ExhibitParticipationProjection::getIsParticipating)
+                .map(p -> new ExhibitDto(p.getExhibitId(), p.getExhibitName()))
+                .toList();
+
+
+        return Map.of(
+                "availableExhibits", availableExhibits,
+                "selectedExhibits", selectedExhibits
+        );
+    }
+
+    @PostMapping("/{exhibitionId}/exhibits")
+    @ResponseBody
+    public void updateExhibitionExhibits(@PathVariable Long exhibitionId, @RequestBody ExhibitIdsDto exhibitIdsDto) {
+        exhibitionService.updateExhibitionExhibits(exhibitionId, exhibitIdsDto.getExhibitIds());
     }
 }

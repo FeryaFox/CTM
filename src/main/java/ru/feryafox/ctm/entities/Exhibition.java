@@ -20,6 +20,7 @@ public class Exhibition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "exhibition_id")
     private Long exhibitionId;
 
     @Column(nullable = false, length = 255)

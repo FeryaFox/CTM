@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Экспонаты</title>
+    <meta name="csrf-token" th:content="${_csrf.token}" />
+    <title>Выставки</title>
     <link rel="icon" th:href="@{/img/favicon.ico}" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -110,6 +111,10 @@
                         <td th:text="${exhibition.description}"></td>
                         <td th:text="${exhibition.ticketPrice}"></td>
                         <td>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exhibitionModal"
+                                th:data-id="${exhibition.exhibitionId}"
+                            >Экспонаты
+                            </button>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"
                                     th:data-id="${exhibition.exhibitionId}"
                                     th:data-name="${exhibition.name}"
@@ -141,6 +146,36 @@
     </footer>
 </div>
 
+<div class="modal fade" id="exhibitionModal" tabindex="-1" aria-labelledby="exhibitionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl"> <!-- Увеличиваем размер модального окна -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exhibitionModalLabel">Экспонаты выставки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Доступные экспонаты</h5>
+                        <ul id="availableExhibits" class="list-group">
+                            <!-- Экспонаты, не участвующие в выставке, будут загружены сюда -->
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Экспонаты на выставке</h5>
+                        <ul id="selectedExhibits" class="list-group">
+                            <!-- Экспонаты, участвующие в выставке, будут загружены сюда -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="saveExhibits">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -213,6 +248,97 @@
 </body>
 
 <script>
+
+
+    const exhibitionModal = document.getElementById('exhibitionModal');
+    exhibitionModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const exhibitionId = button.getAttribute('data-id');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`/employee/exhibitions/${exhibitionId}/exhibits`)
+            .then(response => response.json())
+            .then(data => {
+                const availableExhibitsList = document.getElementById('availableExhibits');
+                const selectedExhibitsList = document.getElementById('selectedExhibits');
+
+                availableExhibitsList.innerHTML = '';
+                selectedExhibitsList.innerHTML = '';
+
+                function createExhibitListItem(exhibit) {
+                    const li = document.createElement('li');
+                    li.classList.add('list-group-item');
+                    li.textContent = exhibit.name;
+                    li.setAttribute('data-id', exhibit.exhibitId);
+
+                    li.addEventListener('click', () => {
+                        // Перемещаем элемент в другой список
+                        if (li.parentElement === availableExhibitsList) {
+                            selectedExhibitsList.appendChild(li);
+                        } else {
+                            availableExhibitsList.appendChild(li);
+                        }
+                    });
+
+                    return li;
+                }
+
+
+                data.availableExhibits.forEach(exhibit => {
+                    availableExhibitsList.appendChild(createExhibitListItem(exhibit));
+                });
+
+                data.selectedExhibits.forEach(exhibit => {
+                    selectedExhibitsList.appendChild(createExhibitListItem(exhibit));
+                });
+
+
+                const saveButton = document.getElementById('saveExhibits');
+                saveButton.addEventListener('click', () => {
+                    const selectedExhibitIds = Array.from(selectedExhibitsList.children)
+                        .map(li => parseInt(li.getAttribute('data-id'), 10));
+
+                    fetch(`/employee/exhibitions/${exhibitionId}/exhibits`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ exhibitIds: selectedExhibitIds })
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                location.reload(); // Или используйте другой метод обновления
+                            } else {
+                                console.error('Ошибка при сохранении экспонатов');
+                            }
+                        });
+                });
+                const searchInput = document.createElement('input');
+                searchInput.type = 'text';
+                searchInput.placeholder = 'Поиск по названию...';
+                searchInput.classList.add('form-control', 'mb-3');
+
+                availableExhibitsList.parentNode.insertBefore(searchInput, availableExhibitsList); // Вставляем перед availableExhibitsList
+
+                searchInput.addEventListener('input', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    const availableItems = availableExhibitsList.querySelectorAll('.list-group-item');
+
+                    availableItems.forEach(item => {
+                        const itemName = item.textContent.toLowerCase();
+                        if (itemName.includes(searchTerm)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+
+            });
+    });
+
+
     const editModal = document.getElementById('editModal');
     editModal.addEventListener('show.bs.modal', event => {
         const button = event.relatedTarget;
@@ -224,7 +350,6 @@
         const theme = button.getAttribute('data-theme');
         const description = button.getAttribute('data-description');
         const ticketPrice = button.getAttribute('data-ticketPrice');
-        // ...get other attributes
 
         const modalBodyInputId = editModal.querySelector('#exhibitionId');
         const modalBodyInputName = editModal.querySelector('#editName');
