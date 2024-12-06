@@ -25,7 +25,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((authorize) -> authorize
                         // Разрешаем доступ только к публичным страницам (логин, регистрация)
-                        .requestMatchers("/login", "/registration").permitAll()
+                        .requestMatchers("/login", "/registration", "/public/**", "/").permitAll()
                         // Защищаем страницы, доступные только для ролей
                         .requestMatchers("/employee/**").hasRole("EMPLOYEE")
                         .requestMatchers("/user/**").hasRole("USER")

@@ -26,7 +26,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_EMPLOYEE"))) {
             redirectUrl = "/employee/";
         } else {
-            redirectUrl = "/";
+            redirectUrl = "/public/";
         }
 
         response.sendRedirect(redirectUrl);
