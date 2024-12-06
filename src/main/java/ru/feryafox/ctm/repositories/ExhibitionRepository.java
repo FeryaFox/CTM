@@ -47,6 +47,12 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
         SELECT
             ex.exhibit_id,
             ex.name AS exhibit_name,
+            ex.production_date,
+            ex.manufacturer,
+            ex.device_type,
+            ex.condition,
+            ex.history,
+            ex.technical_specs,
             CASE WHEN ep.exhibit_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_participating
         FROM
             Exhibition e
@@ -57,4 +63,5 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
         WHERE e.exhibition_id = :exhibitionId
     """, nativeQuery = true)
     List<ExhibitParticipationProjection> findExhibitParticipation(@Param("exhibitionId") long exhibitionId);
+
 }

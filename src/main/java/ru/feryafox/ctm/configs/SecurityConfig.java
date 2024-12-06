@@ -28,7 +28,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/registration", "/public/**", "/").permitAll()
                         // Защищаем страницы, доступные только для ролей
                         .requestMatchers("/employee/**").hasRole("EMPLOYEE")
-                        .requestMatchers("/user/**").hasRole("USER")
+                        .requestMatchers("/visitor/**").hasRole("USER")
                         // Все остальные страницы требуют авторизации
                         .anyRequest().authenticated()
                 )

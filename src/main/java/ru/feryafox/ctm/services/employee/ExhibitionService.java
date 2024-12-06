@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.feryafox.ctm.dto.exhibit.ExhibitDto;
 import ru.feryafox.ctm.dto.exhibit.ParticipatingExhibitDto;
+import ru.feryafox.ctm.dto.exhibit.ShowExhibitDto;
+import ru.feryafox.ctm.dto.exhibit.UpdateExhibitDto;
 import ru.feryafox.ctm.dto.exhibition.CreateExhibitionDto;
 import ru.feryafox.ctm.dto.exhibition.ShowExhibitionDto;
 import ru.feryafox.ctm.dto.exhibition.UpdateExhibitionDto;
@@ -60,6 +62,19 @@ public class ExhibitionService {
                 exhibition.getTheme(),
                 exhibition.getDescription(),
                 exhibition.getTicketPrice()
+        );
+    }
+
+    public Map<String, List<ShowExhibitDto>> getExhibitParticipationFull(Long id) {
+        var projections = exhibitionRepository.findExhibitParticipation(id);
+
+        List<ShowExhibitDto> selectedExhibits = projections.stream()
+                .filter(ExhibitParticipationProjection::getIsParticipating)
+                .map(p -> new ShowExhibitDto(p.getExhibitId(), p.getExhibitName(), p.getProductionDate(), p.getManufacturer(), p.getDeviceType(), p.getCondition(), p.getHistory(), p.getTechnicalSpecs()))
+                .toList();
+
+        return Map.of(
+                "exhibits", selectedExhibits
         );
     }
 
