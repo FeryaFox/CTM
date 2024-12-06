@@ -3,6 +3,7 @@ package ru.feryafox.ctm.services.employee;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.feryafox.ctm.dto.exhibit.ExhibitDto;
 import ru.feryafox.ctm.dto.exhibit.ParticipatingExhibitDto;
 import ru.feryafox.ctm.dto.exhibition.CreateExhibitionDto;
 import ru.feryafox.ctm.dto.exhibition.ShowExhibitionDto;
@@ -14,10 +15,7 @@ import ru.feryafox.ctm.repositories.ExhibitParticipationRepository;
 import ru.feryafox.ctm.repositories.ExhibitRepository;
 import ru.feryafox.ctm.repositories.ExhibitionRepository;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,8 +63,24 @@ public class ExhibitionService {
         );
     }
 
-    public List<ExhibitParticipationProjection> getExhibitParticipation(Long id) {
-        return exhibitionRepository.findExhibitParticipation(id);
+    public Map<String, List<ExhibitDto>> getExhibitParticipation(Long id) {
+        var projections = exhibitionRepository.findExhibitParticipation(id);
+
+        List<ExhibitDto> availableExhibits = projections.stream()
+                .filter(p -> !p.getIsParticipating())
+                .map(p -> new ExhibitDto(p.getExhibitId(), p.getExhibitName()))
+                .toList();
+
+        List<ExhibitDto> selectedExhibits = projections.stream()
+                .filter(ExhibitParticipationProjection::getIsParticipating)
+                .map(p -> new ExhibitDto(p.getExhibitId(), p.getExhibitName()))
+                .toList();
+
+
+        return Map.of(
+                "availableExhibits", availableExhibits,
+                "selectedExhibits", selectedExhibits
+        );
     }
 
     @Transactional

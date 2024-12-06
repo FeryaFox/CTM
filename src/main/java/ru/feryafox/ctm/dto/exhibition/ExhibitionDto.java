@@ -1,5 +1,4 @@
-package ru.feryafox.ctm.dto.exhibit;
-
+package ru.feryafox.ctm.dto.exhibition;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ExhibitDto {
-    private Long exhibitId;
+public class ExhibitionDto {
+    private Long exhibitionId;
     private String name;
 }

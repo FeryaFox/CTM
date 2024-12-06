@@ -44,11 +44,6 @@ public class Exhibition {
     private Integer visitorCount = 0;
 
     @ManyToMany
-    @JoinTable(
-            name = "exhibitioncurator",
-            joinColumns = @JoinColumn(name = "exhibition_id"),
-            inverseJoinColumns = @JoinColumn(name = "employee_id")
-    )
     private Set<Employee> curators;
 
     @ManyToMany(mappedBy = "exhibitions")

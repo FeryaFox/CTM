@@ -18,6 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private VisitorRepository visitorRepository;
+
     @Autowired
     private EmployeeRepository employeeRepository;
 

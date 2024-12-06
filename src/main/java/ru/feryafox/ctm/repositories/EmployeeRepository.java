@@ -6,15 +6,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import ru.feryafox.ctm.entities.Employee;
+import ru.feryafox.ctm.projections.ExhibitCuratorProjection;
+import ru.feryafox.ctm.projections.ExhibitParticipationProjection;
+import ru.feryafox.ctm.projections.ExhibitionCuratorProjection;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     @Query(value = "SELECT * FROM Employee WHERE contact_phone = :contactPhone", nativeQuery = true)
     Optional<Employee> findByContactPhone(@Param("contactPhone") String contactPhone);
+
+    @Query(value = "SELECT * FROM Employee", nativeQuery = true)
+    List<Employee> getAll();
 
     @Transactional
     @Modifying
@@ -34,4 +41,33 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
             @Param("homePhone") String homePhone,
             @Param("passwordHash") String passwordHash
     );
+    @Query(value = """
+        SELECT
+            ex.exhibit_id,
+            ex.name AS exhibit_name,
+            CASE WHEN ep.exhibit_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_curatoring
+        FROM
+            employee e
+                CROSS JOIN
+                Exhibit ex
+                LEFT JOIN
+                exhibitcurator ep ON e.employee_id = ep.employee_id AND ex.exhibit_id = ep.exhibit_id
+        WHERE e.employee_id = :employeeId
+    """, nativeQuery = true)
+    List<ExhibitCuratorProjection> findExhibitCurator(@Param("employeeId") long employeeId);
+
+    @Query(value = """
+        SELECT
+            ex.exhibition_id,
+            ex.name AS exhibition_name,
+            CASE WHEN ep.exhibition_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_curatoring
+        FROM
+            employee e
+                CROSS JOIN
+                exhibition ex
+                LEFT JOIN
+                exhibitioncurator ep ON e.employee_id = ep.employee_id AND ex.exhibition_id = ep.exhibition_id
+        WHERE e.employee_id = :employeeId
+    """, nativeQuery = true)
+    List<ExhibitionCuratorProjection> findExhibitionCurator(@Param("employeeId") long employeeId);
 }

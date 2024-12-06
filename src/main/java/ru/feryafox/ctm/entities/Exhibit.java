@@ -48,18 +48,8 @@ public class Exhibit {
     private LocalDate museumEntryDate;
 
     @ManyToMany
-    @JoinTable(
-            name = "exhibitparticipation",
-            joinColumns = @JoinColumn(name = "exhibit_id"),
-            inverseJoinColumns = @JoinColumn(name = "exhibition_id")
-    )
     private Set<Exhibition> exhibitions;
 
     @ManyToMany
-    @JoinTable(
-            name = "exhibitcurator",
-            joinColumns = @JoinColumn(name = "exhibit_id"),
-            inverseJoinColumns = @JoinColumn(name = "employee_id")
-    )
     private Set<Employee> curators;
 }

@@ -56,23 +56,7 @@ public class ExhibitionController {
     @GetMapping("/{id}/exhibits")
     @ResponseBody
     public Map<String, List<ExhibitDto>> exhibits(@PathVariable long id) {
-        List<ExhibitParticipationProjection> projections = exhibitionService.getExhibitParticipation(id);
-
-        List<ExhibitDto> availableExhibits = projections.stream()
-                .filter(p -> !p.getIsParticipating())
-                .map(p -> new ExhibitDto(p.getExhibitId(), p.getExhibitName()))
-                .toList();
-
-        List<ExhibitDto> selectedExhibits = projections.stream()
-                .filter(ExhibitParticipationProjection::getIsParticipating)
-                .map(p -> new ExhibitDto(p.getExhibitId(), p.getExhibitName()))
-                .toList();
-
-
-        return Map.of(
-                "availableExhibits", availableExhibits,
-                "selectedExhibits", selectedExhibits
-        );
+        return exhibitionService.getExhibitParticipation(id);
     }
 
     @PostMapping("/{exhibitionId}/exhibits")
