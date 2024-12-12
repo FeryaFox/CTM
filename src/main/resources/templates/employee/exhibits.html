@@ -41,6 +41,9 @@
                         <li class="nav-item">
                             <a class="nav-link" th:href="@{/employee/employees}">Сотрудники</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/employee/reports}">Отчеты</a>
+                        </li>
                     </ul>
                     <div class="navbar-text">
                         <span sec:authorize="isAuthenticated()" th:text="${#authentication.principal?.lastName} + ' ' + ${#authentication.principal?.firstName?.charAt(0)} + '. ' + ${#authentication.principal?.middleName?.charAt(0)} + '.'"></span>
@@ -137,7 +140,7 @@
 
     <footer>
         <div class="text-center mt-5">
-            <p>© 2024 Мой Сайт. Все права защищены.</p>
+            <p>© 2024 Музей компьютерных технологий. Все права защищены.</p>
         </div>
     </footer>
 </div>

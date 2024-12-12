@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.feryafox.ctm.dto.employee.CreateEmployeeDto;
 import ru.feryafox.ctm.dto.exhibit.ExhibitDto;
 import ru.feryafox.ctm.dto.exhibit.ExhibitIdsDto;
@@ -34,8 +35,9 @@ public class EmployeeController {
     }
 
     @PostMapping("")
-    public String addEmployee(@Valid @ModelAttribute CreateEmployeeDto employee) {
-        employeeService.createEmployee(employee); // TODO сделать вывод пароля
+    public String addEmployee(@Valid @ModelAttribute CreateEmployeeDto employee, RedirectAttributes redirectAttributes) {
+        String password = employeeService.createEmployee(employee);
+        redirectAttributes.addFlashAttribute("generatedPassword", password);
         return "redirect:/employee/employees";
     }
 

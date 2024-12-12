@@ -9,6 +9,7 @@ import ru.feryafox.ctm.entities.Employee;
 import ru.feryafox.ctm.projections.ExhibitCuratorProjection;
 import ru.feryafox.ctm.projections.ExhibitParticipationProjection;
 import ru.feryafox.ctm.projections.ExhibitionCuratorProjection;
+import ru.feryafox.ctm.projections.ReportEmployeesExhibitionsProjection;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -70,4 +71,40 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
         WHERE e.employee_id = :employeeId
     """, nativeQuery = true)
     List<ExhibitionCuratorProjection> findExhibitionCurator(@Param("employeeId") long employeeId);
+
+    @Query(value = """
+
+        SELECT
+            emp.employee_id AS "employee_id",
+            CONCAT(emp.last_name, ' ', emp.first_name, ' ', COALESCE(emp.middle_name, '')) AS "full_name",
+            emp.position AS "position",
+            COUNT(DISTINCT ec.exhibition_id) AS "exhibition_count",
+            COUNT(DISTINCT ex_cur.exhibit_id) AS "exhibit_count",
+            CASE
+                WHEN EXTRACT(YEAR FROM AGE(NOW(), emp.hire_date)) > 0 AND EXTRACT(MONTH FROM AGE(NOW(), emp.hire_date)) > 0 THEN
+                    CONCAT(EXTRACT(YEAR FROM AGE(NOW(), emp.hire_date)), ' лет и ', EXTRACT(MONTH FROM AGE(NOW(), emp.hire_date)), ' месяцев')
+                WHEN EXTRACT(YEAR FROM AGE(NOW(), emp.hire_date)) > 0 THEN
+                    CONCAT(EXTRACT(YEAR FROM AGE(NOW(), emp.hire_date)), ' лет')
+                ELSE
+                    CONCAT(EXTRACT(MONTH FROM AGE(NOW(), emp.hire_date)), ' месяцев')
+            END AS "work_experience"
+        FROM
+            Employee emp
+                LEFT JOIN ExhibitionCurator ec ON emp.employee_id = ec.employee_id
+                LEFT JOIN Exhibition e ON ec.exhibition_id = e.exhibition_id
+                LEFT JOIN ExhibitCurator ex_cur ON emp.employee_id = ex_cur.employee_id
+                LEFT JOIN Exhibit ex ON ex_cur.exhibit_id = ex.exhibit_id
+        WHERE
+            e.start_date BETWEEN :start_date AND :end_date
+        GROUP BY
+            emp.employee_id, emp.last_name, emp.first_name, emp.middle_name, emp.position, emp.hire_date
+        ORDER BY
+            COUNT(DISTINCT ec.exhibition_id) DESC,
+            COUNT(DISTINCT ex_cur.exhibit_id) DESC;
+        
+        """, nativeQuery = true)
+    List<ReportEmployeesExhibitionsProjection> getReportEmployeesExhibitions(
+            @Param("start_date") LocalDate startDate,
+            @Param("end_date") LocalDate endDate
+    );
 }

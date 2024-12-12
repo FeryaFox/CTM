@@ -1,16 +1,16 @@
-package ru.feryafox.ctm.dto;
+package ru.feryafox.ctm.dto.ticket;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Test {
-    private List<Long> exhibitIds;
+public class TicketRequestDto {
+    private LocalDateTime ticketTime;
 }

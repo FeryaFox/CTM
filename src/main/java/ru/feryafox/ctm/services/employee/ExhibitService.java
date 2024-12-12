@@ -31,35 +31,27 @@ public class ExhibitService {
     }
 
     public List<Exhibit> getAllExhibits() {
-        return exhibitRepository.findAll();  // TODO переписать на SQL это
+        return exhibitRepository.findAll();
     }
 
     public void deleteExhibit(Long id) {
-        exhibitRepository.deleteById(id);  // TODO переписать на SQL это
+        exhibitRepository.deleteById(id);
     }
 
     public void updateExhibit(UpdateExhibitDto exhibitDto) {
-        Optional<Exhibit> optionalExhibit = exhibitRepository.findById(exhibitDto.getExhibitId()); // TODO переписать на SQL это
+        int updatedRows = exhibitRepository.updateExhibit(
+                exhibitDto.getExhibitId(),
+                exhibitDto.getName(),
+                exhibitDto.getProductionDate(),
+                exhibitDto.getManufacturer(),
+                exhibitDto.getDeviceType(),
+                exhibitDto.getCondition(),
+                exhibitDto.getHistory(),
+                exhibitDto.getTechnicalSpecs(),
+                exhibitDto.getMuseumEntryDate()
+        );
 
-        if (optionalExhibit.isPresent()) {
-            Exhibit exhibit = optionalExhibit.get();
-            exhibit.setName(exhibitDto.getName());
-
-            if (exhibitDto.getProductionDate() != null) {
-                exhibit.setProductionDate(exhibitDto.getProductionDate());
-            }
-            exhibit.setManufacturer(exhibitDto.getManufacturer());
-            exhibit.setDeviceType(exhibitDto.getDeviceType());
-            exhibit.setCondition(exhibitDto.getCondition());
-            exhibit.setHistory(exhibitDto.getHistory());
-            exhibit.setTechnicalSpecs(exhibitDto.getTechnicalSpecs());
-            if (exhibitDto.getMuseumEntryDate() != null) {
-                exhibit.setMuseumEntryDate(exhibitDto.getMuseumEntryDate());
-            }
-
-
-            exhibitRepository.save(exhibit); // TODO переписать на SQL это
-        } else {
+        if (updatedRows == 0) {
             throw new IllegalArgumentException("Exhibit with ID " + exhibitDto.getExhibitId() + " not found");
         }
     }

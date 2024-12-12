@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.feryafox.ctm.dto.exhibit.ShowExhibitDto;
+import ru.feryafox.ctm.dto.ticket.TicketRequestDto;
 import ru.feryafox.ctm.services.employee.ExhibitionService;
 import ru.feryafox.ctm.services.visitor.TicketService;
 
@@ -26,7 +27,7 @@ public class VisitorController {
 
     @GetMapping("/")
     public String visitor(Model model) {
-        model.addAttribute("exhibitions", exhibitionService.getExhibitions()); // TODO сделать, чтобы выводились только выставки, которые будут
+        model.addAttribute("exhibitions", exhibitionService.getExhibitions());
         return "visitors/index";
     }
 
@@ -37,13 +38,16 @@ public class VisitorController {
     }
 
     @PostMapping("/ticket/{exhibitionId}")
-    public String buyTicket(@PathVariable Long exhibitionId) {
+    public String buyTicket(
+            @PathVariable Long exhibitionId,
+            @RequestBody TicketRequestDto ticketRequest
+    ) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Object principal = authentication.getPrincipal();
         UserDetails userDetails = (UserDetails) principal;
 
-        ticketService.buyTicket(userDetails.getUsername(), exhibitionId);
+        ticketService.buyTicket(userDetails.getUsername(), exhibitionId, ticketRequest.getTicketTime());
         return "redirect:/visitor/";
     }
 
@@ -53,8 +57,7 @@ public class VisitorController {
         Object principal = authentication.getPrincipal();
         UserDetails userDetails = (UserDetails) principal;
 
-
         model.addAttribute("tickets", ticketService.getAllUserTickets(userDetails.getUsername()));
-        return "visitors/ticket"; // TODO добавить возможность удалить билет
+        return "visitors/ticket";
     }
 }

@@ -24,22 +24,22 @@ public class TicketService {
         this.visitorRepository = visitorRepository;
     }
 
-    public void buyTicket(String phone, Long exhibitionId) {
+    public void buyTicket(String phone, Long exhibitionId, LocalDateTime exhibitionDate) {
 
-        Exhibition exhibition = exhibitionRepository.findById(exhibitionId).orElseThrow(); // TODO переписать на sql
-        Visitor visitor = visitorRepository.findByContactPhone(phone).orElseThrow(); // TODO переписать на sql
+        Exhibition exhibition = exhibitionRepository.findById(exhibitionId).orElseThrow();
+        Visitor visitor = visitorRepository.findByContactPhone(phone).orElseThrow();
 
         ticketRepository.addTicket(
                 exhibition.getTicketPrice(),
                 exhibition.getExhibitionId(),
                 visitor.getVisitorId(),
                 LocalDateTime.now(),
-                LocalDateTime.now()
-        ); // TODO добавить возможность выбирать время
+                exhibitionDate
+        );
     }
 
     public List<ShowTicketDto> getAllUserTickets(String phone) {
-        Visitor visitor = visitorRepository.findByContactPhone(phone).orElseThrow(); // TODO переписать на sql
+        Visitor visitor = visitorRepository.findByContactPhone(phone).orElseThrow();
 
         return ticketRepository.findTicketsByOwner(visitor).stream().map(p -> new ShowTicketDto(p.getTicketId(), p.getPurchaseDate(), p.getExhibitionDate(), p.getExhibition().getName(), p.getPrice())).toList();
     }

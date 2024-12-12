@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.feryafox.ctm.dto.exhibit.ParticipatingExhibitDto;
 import ru.feryafox.ctm.entities.Exhibition;
 import ru.feryafox.ctm.projections.ExhibitParticipationProjection;
+import ru.feryafox.ctm.projections.ReportExhibitionsCuratorAndTicketsProjection;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -64,4 +66,47 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
     """, nativeQuery = true)
     List<ExhibitParticipationProjection> findExhibitParticipation(@Param("exhibitionId") long exhibitionId);
 
+    @Query(value = """
+        SELECT * FROM Exhibition
+    """, nativeQuery = true)
+    List<Exhibition> findAllExhibitions();
+
+    @Query(value = """
+    SELECT * FROM Exhibition
+    WHERE start_date <= CURRENT_TIMESTAMP AND end_date >= CURRENT_TIMESTAMP
+""", nativeQuery = true)
+    List<Exhibition> findAllExhibitionsCurrentlyAvailable();
+
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Exhibition e WHERE e.exhibitionId = :exhibitionId")
+    void deleteByExhibitionId(@Param("exhibitionId") Long exhibitionId);
+
+    @Query(value = """
+        SELECT
+            e.exhibition_id AS "exhibition_id",
+            e.name AS "name",
+            e.theme AS "theme",
+            COUNT(DISTINCT t.ticket_id) AS "tickets_count",
+            SUM(t.price) AS "tickets_price",
+            COUNT(DISTINCT ec.employee_id) AS "curator_count",
+            COUNT(DISTINCT ep.exhibit_id) AS "exhibits_count"
+        FROM
+            Exhibition e
+                LEFT JOIN Ticket t ON e.exhibition_id = t.exhibition_id
+                LEFT JOIN ExhibitionCurator ec ON e.exhibition_id = ec.exhibition_id
+                LEFT JOIN ExhibitParticipation ep ON e.exhibition_id = ep.exhibition_id
+        WHERE
+            t.purchase_date BETWEEN :start_date AND :end_date
+        GROUP BY
+            e.exhibition_id, e.name, e.theme
+        ORDER BY
+            SUM(t.price) DESC;
+        
+    """, nativeQuery = true)
+    List<ReportExhibitionsCuratorAndTicketsProjection> getReportExhibitionsCuratorAndTickets(
+            @Param("start_date") LocalDate startDate,
+            @Param("end_date") LocalDate endDate
+    );
 }

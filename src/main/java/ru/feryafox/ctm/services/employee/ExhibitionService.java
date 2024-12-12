@@ -44,13 +44,13 @@ public class ExhibitionService {
     }
 
     public List<ShowExhibitionDto> getExhibitions() {
-        return exhibitionRepository.findAll().stream() // TODO переписать на SQL это
+        return exhibitionRepository.findAllExhibitionsCurrentlyAvailable().stream()
                 .map(ShowExhibitionDto::from)
                 .collect(Collectors.toList());
     }
 
     public void deleteExhibition(long exhibitionId) {
-        exhibitionRepository.deleteById(exhibitionId); // TODO переписать на SQL это
+        exhibitionRepository.deleteByExhibitionId(exhibitionId);
     }
 
     public void updateExhibition( UpdateExhibitionDto exhibition) {
