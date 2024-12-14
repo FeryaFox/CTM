@@ -175,7 +175,6 @@
 <script>
     const exhibitModal = document.getElementById('exhibitsModal');
     exhibitModal.addEventListener('show.bs.modal', event => {
-        console.log(124)
         const button = event.relatedTarget;
         const exhibitionId = button.getAttribute('data-id');
 
@@ -255,9 +254,12 @@
                     }).then(response => {
                         if (response.ok) {
                             successMessage.classList.add('show'); // Показать сообщение
+
                             setTimeout(() => {
                                 successMessage.classList.remove('show'); // Начать плавное исчезновение
                             }, 3000); // Сообщение исчезает через 3 секунды
+                            bootstrap.Modal.getInstance(document.getElementById('ticketTimeModal')).hide();
+                            ticketTimeModal.hide();
                         } else {
                             alert("Ошибка при покупке билета!");
                         }

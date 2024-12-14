@@ -80,7 +80,7 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM Exhibition e WHERE e.exhibitionId = :exhibitionId")
+    @Query(value = "DELETE FROM Exhibition e WHERE e.exhibition_id = :exhibitionId", nativeQuery = true)
     void deleteByExhibitionId(@Param("exhibitionId") Long exhibitionId);
 
     @Query(value = """

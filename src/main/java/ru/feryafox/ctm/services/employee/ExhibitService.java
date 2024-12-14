@@ -35,7 +35,7 @@ public class ExhibitService {
     }
 
     public void deleteExhibit(Long id) {
-        exhibitRepository.deleteById(id);
+        exhibitRepository.deleteByExhibitId(id);
     }
 
     public void updateExhibit(UpdateExhibitDto exhibitDto) {

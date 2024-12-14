@@ -43,8 +43,8 @@ public class AdminInitializer {
                         "admin",
                         passwordEncoder.encode(password)
                 );
-
-                System.out.printf("Имя пароль админа: %s\n", password);
+                // AI4WRonu0)ou7WQp
+                System.out.printf("Пароль админа: %s\n", password);
             }
         };
     }
