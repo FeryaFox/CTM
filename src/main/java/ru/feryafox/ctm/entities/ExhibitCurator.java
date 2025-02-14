@@ -1,15 +1,13 @@
 package ru.feryafox.ctm.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.feryafox.ctm.keys.ExhibitCuratorId;
 
 @Entity
 @Table(name = "exhibitcurator")
-@Data
+@Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

@@ -1,10 +1,7 @@
 package ru.feryafox.ctm.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +15,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "Employee")
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -65,9 +64,11 @@ public class Employee implements UserDetails {
     private String passwordHash;
 
     @ManyToMany(mappedBy = "curators")
+    @ToString.Exclude
     private Set<Exhibition> exhibitions;
 
     @ManyToMany(mappedBy = "curators")
+    @ToString.Exclude
     private Set<Exhibit> exhibits;
 
     @Override
